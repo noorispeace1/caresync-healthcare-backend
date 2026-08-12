@@ -12,7 +12,8 @@ import config from "./app/config";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFound";
 import { AuthRoutes } from "./app/module/auth/auth.route";
-
+import { RedisClient } from "./app/lib/redis";
+import  crypto  from "crypto";
 const app: Application = express();
 
 app.use(
@@ -31,34 +32,32 @@ app.use(cookieParser());
 
 app.use("/api/v1/auth", AuthRoutes);
 
-app.post("/zod", async (req: Request, res: Response, next : NextFunction) => {
+app.get("/test", async (req: Request, res: Response, next : NextFunction) => {
 
 	try {
-		const UserZodSchema = z.object({
-			name: z.string().endsWith("r"),
-			email : z.email(),
-			age: z.number().optional(),
-			isVerified: z.boolean().optional(),
-			books: z.array(z.string()).optional()
-		})
+
+		//100000 > 999999 > 1000000
+
+    const otp = crypto.randomInt(100000,1000000)//1, 2, 3 ,4 ,5 ,6 ,7 => X-10
 
 
-		const payload = req.body;
 
-		const result = UserZodSchema.safeParse(payload)
 
-		if(!result.success){
-			console.log(result.error);
-		}
-		if(result.success){
-			console.log(result.data);
-		}
+
+	// await RedisClient.set("forgot-password-otp:patient1@gmail.com", "123456",{
+	// 	expiration : {
+	// 		type : "EX",
+	// 		value : 5 * 60
+	// 	}
+	// });
+
+		
 
 
 		res.status(httpStatus.OK).json({
 			success: true,
 			message: "Welcome to PH Healthcare System Backend",
-			data : result
+			data : otp
 		});
 	} catch (error) {
 		console.log(error);
