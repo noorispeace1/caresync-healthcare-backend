@@ -14,6 +14,13 @@ import z from "zod";
         contactNumber: z.string().optional()
     }).optional()
 })
+ const PatientEmailVerifyZodSchema = z.object({
+    email: z.email("Not email!!"),
+            otp : z.string().length(6)
+
+      
+
+})
 
 const LoginZodSchema = z.object({
     email : z.email(),
@@ -45,6 +52,7 @@ const ResetPasswordZodSchema =z.object({
 
 export const UserValidation = {
     PatientRegistrationZodSchema,
+    PatientEmailVerifyZodSchema,
     LoginZodSchema,
     ForgotPasswordZodSchema,
     ResetPasswordZodSchema
