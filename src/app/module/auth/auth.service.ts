@@ -15,9 +15,7 @@ import config from "../../config";
 import { googleClient } from "../../lib/googleAuth";
 import { prisma } from "../../lib/prisma";
 import { jwtUtils } from "../../utils/jwt";
-import { RedisClient } from "../../lib/redis";
 import { transporter } from "../../lib/nodemailer";
-
 import type {
     IForgotPasswordPayload,
     IGoogleLoginPayload,
@@ -27,6 +25,7 @@ import type {
     IResetPasswordPayload,
 	IVerifyEmailPayload,
 } from "./auth.interface";
+import { redisClient } from "../../lib/redis";
 
 const registerPatient = async (payload: IRegisterPatientPayload) => {
     const { name, password, patient: patientData } = payload;
@@ -46,7 +45,7 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
     const otpkey = `patient-registration-otp:${email}`;
     const otpValue = crypto.randomInt(100000, 1000000).toString();
     
-    await RedisClient.set(otpkey, otpValue, {
+    await redisClient.set(otpkey, otpValue, {
         expiration: {
             type: "EX",
             value: expirationsSeconds
@@ -61,7 +60,7 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
         patient: patientData
     };
     
-    await RedisClient.set(patientRegistrationKey, JSON.stringify(redisUserDataPayload), {
+    await redisClient.set(patientRegistrationKey, JSON.stringify(redisUserDataPayload), {
         expiration: {
             type: "EX",
             value: expirationsSeconds
@@ -107,7 +106,7 @@ const verifiedPatient = async (payload: IRegisterPatientPayload) => {
     const otpkey = `patient-registration-otp:${email}`;
     const otpValue = crypto.randomInt(100000, 1000000).toString();
     
-    await RedisClient.set(otpkey, otpValue, {
+    await redisClient.set(otpkey, otpValue, {
         expiration: {
             type: "EX",
             value: expirationsSeconds
@@ -122,7 +121,7 @@ const verifiedPatient = async (payload: IRegisterPatientPayload) => {
         patient: patientData
     };
     
-    await RedisClient.set(patientRegistrationKey, JSON.stringify(redisUserDataPayload), {
+    await redisClient.set(patientRegistrationKey, JSON.stringify(redisUserDataPayload), {
         expiration: {
             type: "EX",
             value: expirationsSeconds
@@ -175,7 +174,7 @@ const verifyPatientEmail = async (payload: IVerifyEmailPayload) => {
         throw new Error("User email is already verified!");
     }
     const otpKey = `patient-registration-otp:${email}`;
-    const redisOtp = await RedisClient.get(otpKey);
+    const redisOtp = await redisClient.get(otpKey);
 
     if (!redisOtp) {
         throw new Error("Invalid OTP");
@@ -185,9 +184,9 @@ const verifyPatientEmail = async (payload: IVerifyEmailPayload) => {
     if (redisOtp !== otp) {
         throw new Error("OTP does not match");
     }
-	await RedisClient.del(otpKey)
+	await redisClient.del(otpKey)
 	    const patientRegistrationKey = `patient-registration-data:${email}`;
-		const redisPatientData = await RedisClient.get(patientRegistrationKey)
+		const redisPatientData = await redisClient.get(patientRegistrationKey)
 
 
 
@@ -214,7 +213,7 @@ const createdUser = await prisma.user.create({
     include: { patient: true },
 });
 
-await RedisClient.del(patientRegistrationKey)
+await redisClient.del(patientRegistrationKey)
 
   const tempatePath = path.join(process.cwd(), "src/app/templates/patient-welcome-email.ejs");
 
@@ -568,7 +567,7 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
     const key = `forgot-password-otp:${isUserExist.email}`;
     const expirationsSeconds = 5 * 60;
 
-    await RedisClient.set(key, otp, {
+    await redisClient.set(key, otp, {
         expiration: {
             type: "EX",
             value: expirationsSeconds
@@ -623,7 +622,7 @@ const resetPassword = async (payload: IResetPasswordPayload) => {
     }
 
     const key = `forgot-password-otp:${isUserExist.email}`;
-    const redisOtp = await RedisClient.get(key);
+    const redisOtp = await redisClient.get(key);
 
     if (!redisOtp) {
         throw new Error("Invalid OTP");
@@ -644,7 +643,7 @@ const resetPassword = async (payload: IResetPasswordPayload) => {
         }
     });
     
-    await RedisClient.del([key]);
+    await redisClient.del([key]);
     
     const tempatePath = path.join(process.cwd(), "src/app/templates/reset-password-success.ejs");
 
