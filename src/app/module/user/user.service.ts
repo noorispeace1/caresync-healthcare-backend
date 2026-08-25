@@ -3,7 +3,6 @@ import { cloudinary } from "../../lib/cloudinary";
 import { prisma } from "../../lib/prisma";
 
 const uploadProfileImage = async (buffer: Buffer, userId: string) => {
-    // আগের ইউজারের ডেটা খুঁজে বের করা
     const currentUser = await prisma.user.findUnique({
         where: {
             id: userId
@@ -14,7 +13,6 @@ const uploadProfileImage = async (buffer: Buffer, userId: string) => {
         }
     })
 
-    // ক্লাউডিনারিতে নতুন ছবি আপলোড করা
     const cloudinaryResult = await new Promise<UploadApiResponse>((resolve, reject) => {
         cloudinary.uploader.upload_stream(
             {
@@ -34,7 +32,6 @@ const uploadProfileImage = async (buffer: Buffer, userId: string) => {
         ).end(buffer)
     })
 
-    // ডাটাবেসে ইউজারের নতুন ছবির লিংক এবং পাবলিক আইডি আপডেট করা
     const updatedUser = await prisma.user.update({
         where: {
             id: userId

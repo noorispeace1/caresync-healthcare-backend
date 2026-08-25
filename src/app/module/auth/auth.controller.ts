@@ -185,7 +185,7 @@ const resetPassword = catchAsync( async (req: Request, res: Response) => {
 
 export const AuthController = {
     registerPatient,
-    verifyPatientEmail, // <--- এটি আগে যোগ করা ছিল না, এখন যোগ করা হয়েছে
+    verifyPatientEmail, 
     loginUser,
     getMe,
     refreshToken,
