@@ -1,6 +1,4 @@
 node_modules
-.env
-.env.*
 !.env.example
 dist
 
@@ -11,4 +9,4 @@ pnpm-lock.yaml
 yarn.lock
 package-lock.json
 pnpm-workspace.yaml
-.vscode
+config.bat

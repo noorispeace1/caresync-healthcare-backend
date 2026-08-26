@@ -5,6 +5,7 @@ import type { JwtPayload, SignOptions } from "jsonwebtoken";
 import crypto from "crypto";
 import path from "path";
 import ejs from "ejs";
+import httpStatus from "http-status"
 
 import {
     AuthProvider,
@@ -26,6 +27,7 @@ import type {
 	IVerifyEmailPayload,
 } from "./auth.interface";
 import { redisClient } from "../../lib/redis";
+import { AppError } from "../../utils/AppError";
 
 const registerPatient = async (payload: IRegisterPatientPayload) => {
     const { name, password, patient: patientData } = payload;
@@ -270,7 +272,8 @@ const loginUser = async (payload: ILoginUserPayload) => {
     });
 
     if (!user) {
-        throw new Error("User not found");
+        // throw new Error("User not found");
+     throw new AppError(httpStatus.NOT_FOUND,"User Not found")
     }
 
     if (user.status === UserStatus.BLOCKED) {
